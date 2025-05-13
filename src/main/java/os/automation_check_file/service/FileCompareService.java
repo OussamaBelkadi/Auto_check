@@ -9,4 +9,5 @@ import java.util.Set;
 public interface FileCompareService{
     Set<String> extractSegment(MultipartFile file) throws IOException;
     List<String> extractHeadersFromRow20(MultipartFile file) throws IOException;
+
 }

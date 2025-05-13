@@ -1,22 +1,25 @@
 package os.automation_check_file.entity;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import os.automation_check_file.ErpEnum;
 
+import java.io.Serializable;
 import java.util.UUID;
-
 @Entity
+@Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Segment {
+public class Segment implements Serializable {
+    public enum Erp {Oracle, Sap}
     @Id
     @GeneratedValue
     private UUID id;
-    private Integer segmentRef03;
-    private ErpEnum erp;
+    private int segmentRef03;
+
+    @Enumerated(EnumType.STRING)
+    private Erp erp;
 }
