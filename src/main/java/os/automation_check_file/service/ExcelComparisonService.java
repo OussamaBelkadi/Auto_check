@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 @Service
 public class ExcelComparisonService {
-    @Value("${dictionary}")
+    @Value("${ref_dictionary_path}")
     private String DICTIONARY_PATH;
 
     private final FileHelper fileHelper;
@@ -29,55 +29,55 @@ public class ExcelComparisonService {
         this.fileHelper = fileHelper;
     }
 
-    public FileComparisonResult compareFiles(MultipartFile referenceFile, MultipartFile inputFile) throws IOException {
-        List<MismatchRecord> mismatches = new ArrayList<>();
-
-        // Load title mappings from dictionary
-        Map<String, String> titleMappings = fileHelper.readJsonFromFile(DICTIONARY_PATH, Map.class);
-
-        try (Workbook referenceWorkbook = new XSSFWorkbook(referenceFile.getInputStream());
-             Workbook inputWorkbook = new XSSFWorkbook(inputFile.getInputStream())) {
-
-            Sheet referenceSheet = referenceWorkbook.getSheetAt(0);
-            Sheet inputSheet = inputWorkbook.getSheetAt(0);
-
-            // Get reference headers and values
-            Map<String, String> referenceValues = extractReferenceValues(referenceSheet);
-            Map<String, Integer> inputHeaders = extractInputHeaders(inputSheet);
-
-            // Compare values
-            for (Map.Entry<String, String> entry : referenceValues.entrySet()) {
-                String referenceTitle = entry.getKey();
-                String referenceValue = entry.getValue();
-
-                // Skip if reference value is empty
-                if (referenceValue.trim().isEmpty()) {
-                    continue;
-                }
-
-                // Get corresponding input column title using mapping
-                String inputTitle = titleMappings.get(referenceTitle);
-                if (inputTitle == null || !inputHeaders.containsKey(inputTitle)) {
-                    continue;
-                }
-
-                // Get column index in input file
-                int inputColumnIndex = inputHeaders.get(inputTitle);
-
-                // Compare values in input file
-                compareValues(inputSheet, inputColumnIndex, referenceValue, inputTitle, mismatches);
-            }
-        }
-
-        boolean isValid = mismatches.isEmpty();
-        String message = isValid ? "No mismatches found" : "Found " + mismatches.size() + " mismatches";
-
-        return new FileComparisonResult(isValid, mismatches, message);
-    }
+//    public FileComparisonResult compareFiles(MultipartFile referenceFile, MultipartFile inputFile) throws IOException {
+//        List<MismatchRecord> mismatches = new ArrayList<>();
+//
+//        // Load title mappings from dictionary
+//        Map<String, String> titleMappings = fileHelper.readJsonFromFile(DICTIONARY_PATH, Map.class);
+//
+//        try (Workbook referenceWorkbook = new XSSFWorkbook(referenceFile.getInputStream());
+//             Workbook inputWorkbook = new XSSFWorkbook(inputFile.getInputStream())) {
+//
+//            Sheet referenceSheet = referenceWorkbook.getSheetAt(0);
+//            Sheet inputSheet = inputWorkbook.getSheetAt(0);
+//
+//            // Get reference headers and values
+//            Map<String, String> referenceValues = extractReferenceValues(referenceSheet);
+//            Map<String, Integer> inputHeaders = extractInputHeaders(inputSheet);
+//
+//            // Compare values
+//            for (Map.Entry<String, String> entry : referenceValues.entrySet()) {
+//                String referenceTitle = entry.getKey();
+//                String referenceValue = entry.getValue();
+//
+//                // Skip if reference value is empty
+//                if (referenceValue.trim().isEmpty()) {
+//                    continue;
+//                }
+//
+//                // Get corresponding input column title using mapping
+//                String inputTitle = titleMappings.get(referenceTitle);
+//                if (inputTitle == null || !inputHeaders.containsKey(inputTitle)) {
+//                    continue;
+//                }
+//
+//                // Get column index in input file
+//                int inputColumnIndex = inputHeaders.get(inputTitle);
+//
+//                // Compare values in input file
+//                compareValues(inputSheet, inputColumnIndex, referenceValue, inputTitle, mismatches);
+//            }
+//        }
+//
+//        boolean isValid = mismatches.isEmpty();
+//        String message = isValid ? "No mismatches found" : "Found " + mismatches.size() + " mismatches";
+//
+//        return new FileComparisonResult(isValid, mismatches, message);
+//    }
 
     private Map<String, String> extractReferenceValues(Sheet sheet) {
         Map<String, String> values = new HashMap<>();
-        Row headerRow = sheet.getRow(Constant.REFERENCE_HEADER_ROW);
+        Row headerRow = sheet.getRow(Constant.INPUT_HEADER_ROW);
         Row valueRow = sheet.getRow(Constant.REFERENCE_VALUE_ROW);
 
         if (headerRow != null && valueRow != null) {
@@ -112,25 +112,31 @@ public class ExcelComparisonService {
         return headers;
     }
 
-    private void compareValues(Sheet inputSheet, int columnIndex, String referenceValue,
-                               String columnName, List<MismatchRecord> mismatches) {
-        for (int rowNum = Constant.INPUT_START_ROW; rowNum <= inputSheet.getLastRowNum(); rowNum++) {
-            Row row = inputSheet.getRow(rowNum);
-            if (row != null) {
-                Cell cell = row.getCell(columnIndex);
-                if (cell != null) {
-                    String inputValue = getCellValue(cell).trim();
-                    if (!inputValue.isEmpty() && !inputValue.equals(referenceValue)) {
-                        mismatches.add(new MismatchRecord(
-                                referenceValue,
-                                inputValue,
-                                rowNum + 1, // Convert to 1-based index for human readability
-                                columnName
-                        ));
-                    }
-                }
-            }
-        }
+//    private void compareValues(Sheet inputSheet, int columnIndex, String referenceValue,
+//                               String columnName, List<MismatchRecord> mismatches) {
+//        for (int rowNum = Constant.INPUT_START_ROW; rowNum <= inputSheet.getLastRowNum(); rowNum++) {
+//            Row row = inputSheet.getRow(rowNum);
+//            if (row != null) {
+//                Cell cell = row.getCell(columnIndex);
+//                if (cell != null) {
+//                    String inputValue = getCellValue(cell).trim();
+//                    if (!inputValue.isEmpty() && !inputValue.equals(referenceValue)) {
+//                        mismatches.add(new MismatchRecord(
+//                                formatReferenceValue(referenceValue),
+//                                formatActualValue(inputValue),
+//                                String.format("Value mismatch in column %s", columnName)
+//                        ));
+//                    }
+//                }
+//            }
+//        }
+//    }
+    private String formatReferenceValue(String value) {
+        return value != null ? value.trim() : "";
+    }
+
+    private String formatActualValue(String value) {
+        return value != null ? value.trim() : "";
     }
 
 //    public List<Cell> getColumnCells(Sheet sheet, int columnIndex) {

@@ -1,0 +1,36 @@
+services:
+
+  postgres_db:
+    image: postgres:15
+    container_name: automate
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: automate_db
+      POSTGRES_HOST: localhost
+    ports:
+      - "5432:5432"
+    volumes:
+      - "./db-1:/var/lib/postgresql/data"
+    networks:
+      - db
+
+#  patient-service:
+#    build: .
+#    container_name: patient-service
+#    ports:
+#      - "4000:4000"
+#    environment:
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-1:5432/patient_db
+#      - SPRING_DATASOURCE_USERNAME=postgres
+#      - SPRING_DATASOURCE_PASSWORD=postgres
+#    depends_on:
+#      - db-1
+#    networks:
+#      - db
+volumes:
+  db-1:
+    driver: local
+networks:
+  db:
+    driver: bridge

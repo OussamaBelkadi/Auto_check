@@ -3,13 +3,17 @@ package os.automation_check_file.dto;
 import lombok.*;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class MismatchRecord {
-    private String referenceValue;
+    private String headerValue;
+    private Set<String> expectedValue;
     private String actualValue;
-    private int position;
-    private String columnName;
+    private int rowNumber;
+    private int columnNumber;
+
 }
