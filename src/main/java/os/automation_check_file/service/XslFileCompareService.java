@@ -67,14 +67,7 @@ public class XslFileCompareService implements FileCompareService {
                     continue;
                 }
 
-                // Continuer avec le traitement normal pour les lignes non vides
-                validateAndGetReconciliationReference(row, rowIndex + 1, mismatchRecords);
-                validateBijectiveControl(row, rowIndex + 1, mismatchRecords);
-                validateSegmentsNotNull(row, rowIndex + 1, mismatchRecords);
-                validateCustomAttributes(row, mismatchRecords);
                 String segment03Value = getCellValueFromRowOrEmpty(row, COLUMN_MAPPINGS.get("ORACLE-SEG03-COMPTE"));
-                fetchCurrency(row, mismatchRecords);
-
                 if (segment03Value.isEmpty()) {
                     continue;
                 }
@@ -85,6 +78,12 @@ public class XslFileCompareService implements FileCompareService {
                 }
 
                 mismatchRecords.addAll(checkRowValuesAgainstReferences(row, matchingReferences, rowIndex + 1));
+                // Continuer avec le traitement normal pour les lignes non vides
+                validateAndGetReconciliationReference(row, rowIndex + 1, mismatchRecords);
+                validateBijectiveControl(row, rowIndex + 1, mismatchRecords);
+                validateSegmentsNotNull(row, rowIndex + 1, mismatchRecords);
+                validateCustomAttributes(row, mismatchRecords);
+                fetchCurrency(row, mismatchRecords);
             }
         }
         return mismatchRecords;
@@ -129,13 +128,11 @@ public class XslFileCompareService implements FileCompareService {
 
             Set<String> possibleValues = getReferenceValues(references, columnName);
             if (!possibleValues.contains(actualValue)) {
+                int columnIndex = COLUMN_MAPPINGS.get(columnName);
                 errors.add(String.format("Ligne %d, Colonne %s : Valeur '%s' invalide. Valeurs possibles : %s", rowNum, columnName, actualValue, String.join(", ", possibleValues)));
-                MismatchRecord mismatchRecord = MismatchRecord.builder().columnNumber(COLUMN_MAPPINGS.get(columnName)).headerValue(columnName).actualValue(actualValue).expectedValue(possibleValues).rowNumber(rowNum).build();
+                MismatchRecord mismatchRecord = MismatchRecord.builder().columnNumber(++columnIndex).headerValue(columnName).actualValue(actualValue).expectedValue(possibleValues).rowNumber(rowNum).build();
                 mismatchRecords.add(mismatchRecord);
             }
-//            System.out.println("---------");
-//            System.out.println(actualValue);
-//            System.out.println("---------");
 
         }
 
@@ -152,9 +149,10 @@ public class XslFileCompareService implements FileCompareService {
 
         // Vérifier seg11TypeSupport
         if (seg11TypeSupport.isEmpty() || (!currency.contains(seg11TypeSupport) && !seg11TypeSupport.equals("0"))) {
+            int columnIndex = COLUMN_MAPPINGS.get("ORACLE-SEG11-TYPE-SUPPORT");
             mismatchRecords.add(MismatchRecord.builder()
                     .rowNumber(row.getRowNum() + 1)
-                    .columnNumber(COLUMN_MAPPINGS.get("ORACLE-SEG11-TYPE-SUPPORT"))
+                    .columnNumber(++columnIndex)
                     .headerValue("ORACLE-SEG11-TYPE-SUPPORT")
                     .actualValue(seg11TypeSupport)
                     .expectedValue(Set.of("ORACLE-SEG11-TYPE-SUPPORT doit être dans " + currency + " ou bien égal à 0"))
@@ -163,9 +161,10 @@ public class XslFileCompareService implements FileCompareService {
 
         // Vérifier oracleCurrencyValue
         if (!currency.contains(oracleCurrencyValue)) {
+            int columnIndex = COLUMN_MAPPINGS.get("ORACLE-CURRENCY-CODE");
             mismatchRecords.add(MismatchRecord.builder()
                     .rowNumber(row.getRowNum() + 1)
-                    .columnNumber(COLUMN_MAPPINGS.get("ORACLE-CURRENCY-CODE"))
+                    .columnNumber(++columnIndex)
                     .headerValue("ORACLE-CURRENCY-CODE")
                     .actualValue(oracleCurrencyValue)
                     .expectedValue(Set.of("ORACLE-CURRENCY-CODE doit être dans " + currency))
@@ -181,7 +180,7 @@ public class XslFileCompareService implements FileCompareService {
         Integer attrib14Column = COLUMN_MAPPINGS.get("ORACLE-ATTRIB-14");
 
         if (attrib14Value.isEmpty() && !segment17Value.isEmpty() && !segment17Value.equals("0")) {
-            MismatchRecord mismatchRecord = MismatchRecord.builder().rowNumber(rowIndex).columnNumber(attrib14Column).headerValue("ORACLE-ATTRIB-14").actualValue(attrib14Value).expectedValue(Set.of("ORACLE-ATTRIB-14 dois etre rensignes ")).build();
+            MismatchRecord mismatchRecord = MismatchRecord.builder().rowNumber(rowIndex).columnNumber(++attrib14Column).headerValue("ORACLE-ATTRIB-14").actualValue(attrib14Value).expectedValue(Set.of("ORACLE-ATTRIB-14 dois etre rensignes ")).build();
             mismatchRecords.add(mismatchRecord);
         }
     }
@@ -196,7 +195,7 @@ public class XslFileCompareService implements FileCompareService {
         }
 
         if (segment03Value.endsWith("10") && reconciliationReference.isEmpty()) {
-            MismatchRecord mismatchRecord = MismatchRecord.builder().rowNumber(rowIndex).columnNumber(columnNumber).headerValue("ORACLE-RECONCIL-REFERENCE").actualValue("").expectedValue(Set.of("Ce champ ne dois etre pas nul si le segment 03 ce termine par 10")).build();
+            MismatchRecord mismatchRecord = MismatchRecord.builder().rowNumber(rowIndex).columnNumber(++columnNumber).headerValue("ORACLE-RECONCIL-REFERENCE").actualValue("").expectedValue(Set.of("Ce champ ne dois etre pas nul si le segment 03 ce termine par 10")).build();
             mismatchRecords.add(mismatchRecord);
         }
     }
@@ -212,7 +211,7 @@ public class XslFileCompareService implements FileCompareService {
             Integer columnNumber = COLUMN_MAPPINGS.get(segmentName);
 
             if (!segmentReference.isEmpty() && segmentValue.isEmpty()) {
-                MismatchRecord mismatchRecord = MismatchRecord.builder().rowNumber(rowIndex).columnNumber(columnNumber).headerValue(segmentName).actualValue("").expectedValue(Set.of("Ce champ ne dois etre pas nul")).build();
+                MismatchRecord mismatchRecord = MismatchRecord.builder().rowNumber(rowIndex).columnNumber(++columnNumber).headerValue(segmentName).actualValue("").expectedValue(Set.of("Ce champ ne dois etre pas nul")).build();
                 mismatchRecords.add(mismatchRecord);
             }
         }
@@ -231,7 +230,7 @@ public class XslFileCompareService implements FileCompareService {
                 if (!attributeValue.isEmpty() && attributeValue.equals("0")) {
                     mismatchRecords.add(MismatchRecord.builder()
                             .rowNumber(row.getRowNum() + 1)
-                            .columnNumber(columnIndex)
+                            .columnNumber(++columnIndex)
                             .headerValue(columnName)
                             .actualValue(attributeValue)
                             .expectedValue(Set.of(columnName + " ne doit pas être égal à 0"))
@@ -295,11 +294,9 @@ public class XslFileCompareService implements FileCompareService {
                 referenceData.add(lineValues);
             }
         }
-
+        referenceData.get(0);
         return referenceData;
     }
-
-
 
     private Set<String> getReferenceValues(List<ReferenceLineValues> references, String columnName) {
         return references.stream().map(ref -> switch (columnName) {
@@ -331,11 +328,9 @@ public class XslFileCompareService implements FileCompareService {
         }).filter(value -> !value.isEmpty()).collect(Collectors.toSet());
     }
 
-
     public List<ReferenceLineValues> getPossibilitiesForSegment03(String segment03, List<ReferenceLineValues> referenceData) {
         return referenceData.stream().filter(ref -> segment03.equals(ref.getSegment03())).collect(Collectors.toList());
     }
-
 
     @Override
     public Map<String, Integer> fetchColumnFromDictionary() {
@@ -357,8 +352,6 @@ public class XslFileCompareService implements FileCompareService {
             if (COLUMN_MAPPINGS.isEmpty()) {
                 throw new IllegalStateException("No valid column mappings found in dictionary file");
             }
-//            System.out.println(COLUMN_MAPPINGS);
-//            System.out.println("--------------------------");
             return COLUMN_MAPPINGS;
         } catch (IOException e) {
             throw new RuntimeException("Failed to load dictionary file", e);
@@ -385,7 +378,6 @@ public class XslFileCompareService implements FileCompareService {
             if (COLUMN_MAPPINGS_REF.isEmpty()) {
                 throw new IllegalStateException("No valid column mappings found in dictionary file");
             }
-//            System.out.println(COLUMN_MAPPINGS_REF);
         } catch (IOException e) {
             throw new RuntimeException("Failed to load dictionary file", e);
         }
@@ -394,20 +386,6 @@ public class XslFileCompareService implements FileCompareService {
     private boolean isRequiredColumn(String columnName) {
         return columnName.startsWith("ORACLE-SEGMENT") || columnName.startsWith("ORACLE-CURRENCY") || columnName.startsWith("ORACLE-RECONCIL") || columnName.startsWith("ORACLE-ATTRIB") || columnName.startsWith("ORACLE-SEG") || columnName.equals("ORACLE-STATUS-CODE") || columnName.equals("ORACLE-JOURNAL-SOURCE") || columnName.equals("ORACLE-JOURNAL-CATEGORY") || columnName.equals("ORACLE-ACTUAL-FLAG");
     }
-
-
-//    private String getRowContent(Row row) {
-//        StringBuilder sb = new StringBuilder();
-//        for (int i = 0; i < row.getLastCellNum(); i++) {
-//            Cell cell = row.getCell(i);
-//            if (cell != null) {
-//                sb.append(getCellValue(cell).trim());
-//            }
-//            sb.append(" ");
-//        }
-//        return sb.toString().trim();
-//    }
-
 
     private String getCellValue(Cell cell) {
         if (cell == null) {
@@ -448,7 +426,6 @@ public class XslFileCompareService implements FileCompareService {
             Sheet sheet = workbook.getSheetAt(Constant.INDEX_SHEET);
             Row headerRow = sheet.getRow(Constant.REFERENCE_DOC_HEADER_ROW);
             if (headerRow != null) {
-//                System.out.println(headerRow.getCell(Constant.INDEX_CELL));
                 headerRow.forEach(cell -> {
                     if (cell != null) {
                         String headerValue = getCellValue(cell).trim();
@@ -463,12 +440,10 @@ public class XslFileCompareService implements FileCompareService {
         }
 
         // Create JSON object with headers as keys
-//        List<Map<String, String>> headerMap = new ArrayList<>();
         Map<String, String> cellMap = new HashMap<>();
         for (CellInfo header : headersXslFile) {
             cellMap.put(header.getHeaderValue(), String.valueOf(header.getPosition()));
         }
-//        headerMap.add(cellMap);
         // Write to JSON file
         fileHelper.writeJsonToFile(cellMap, REF_DICTIONARY_PATH);
 
@@ -485,7 +460,6 @@ public class XslFileCompareService implements FileCompareService {
                 String cellValue = getCellValue(cell).trim();
                 int colIndex = cell.getColumnIndex();
 
-//                System.out.println(" - Col " + colIndex + ": " + cellValue);
 
                 // Only for header row
                 if (headerRow.getRowNum() == Constant.INPUT_DOC_HEADER_ROW && !cellValue.isEmpty()) {
@@ -493,11 +467,6 @@ public class XslFileCompareService implements FileCompareService {
                     headersXslFile.add(cellInfo);
                 }
             }
-//            for (Row row : sheet) {
-//                System.out.println("Row: " + row.getRowNum());
-//
-//
-//            }
         }
 
         // Convert headers to a JSON file
@@ -510,6 +479,4 @@ public class XslFileCompareService implements FileCompareService {
 
         return headersXslFile;
     }
-
-
 }
