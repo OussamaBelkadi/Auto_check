@@ -30,6 +30,11 @@ public class ReferenceLineValues {
     private String segment18;
     private String segment19;
     private String segment20;
+    private String segment21;
+    private String segment22;
+    private String segment23;
+    private String segment24;
+    private String segment25;
     private String statusCode;
     private String journalSource;
     private String journalCategory;

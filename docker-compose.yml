@@ -14,7 +14,15 @@ services:
       - "./db-1:/var/lib/postgresql/data"
     networks:
       - db
-
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8888:8888"
+    command:
+      - start-dev
 #  patient-service:
 #    build: .
 #    container_name: patient-service
