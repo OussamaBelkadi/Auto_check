@@ -1,0 +1,19 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+###
+
+POST http://0.0.0.0:8080/realms/xsl-app/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+
+grant_type=password&username=os336&password=1234&client_id=checked_tools
+###
+
+POST http://0.0.0.0:8080/realms/xsl-app/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+
+grant_type=client_credentials&client_id=checked_tools&client_secret=RWQkPMmf8t2qKxzVmdTAT7zrLw7pIewe
+###
